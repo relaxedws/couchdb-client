@@ -93,7 +93,7 @@ class BulkUpdater
             $full_data['docs'] = $data;
             $response = $this->httpClient->request('POST', $this->getPath(), json_encode($full_data), false, $this->requestHeaders);
             if ($response->status != 201) {
-                throw HTTPException::fromResponse($response, $this->getPath());
+                throw HTTPException::fromResponse($this->getPath(), $response);
             }
             $result += $response->body;
         }
