@@ -83,7 +83,7 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
                 array('port' => '5984')
             ));
 
-        $this->parserAndSender->request(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -106,7 +106,7 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -144,7 +144,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -172,7 +172,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -216,7 +216,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -304,7 +304,7 @@ EOT;
             ->willReturn(array('status' => 200));
 
         // Transfer the missing revisions from the source to the target.
-        list($docStack, $responses) = $this->parserAndSender->request(
+        list($docStack, $responses) = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -366,7 +366,7 @@ EOT;
           ->method('getConnection')
           ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
           $this->sourceMethod,
           $this->sourcePath,
           $this->targetPath,
