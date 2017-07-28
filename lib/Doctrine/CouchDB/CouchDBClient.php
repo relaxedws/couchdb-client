@@ -562,13 +562,14 @@ class CouchDBClient
         return $response->body;
     }
 
-    /**
-     * Retrieve specific binary attachment data.
-     *
-     * @param string $id
-     * @param string $fileName
-     * @return string
-     */
+  /**
+   * Retrieve specific binary attachment data.
+   *
+   * @param string $id
+   * @param string $fileName
+   * @return string
+   * @throws HTTPException
+   */
     public function getAttachment($id, $fileName) {
         $attachmentPath = '/' . $this->databaseName . '/' . $id . '/' . $fileName;
         $response = $this->httpClient->request('GET', $attachmentPath, null, true);
@@ -704,7 +705,7 @@ class CouchDBClient
         $targetPath = '/' . $target->getDatabase() . '/' . $docId . '?new_edits=false';
 
         $mutltipartHandler = new MultipartParserAndSender($this->getHttpClient(), $target->getHttpClient());
-        return $mutltipartHandler->request(
+        return $mutltipartHandler->transferDocuments(
             'GET',
             $path,
             $targetPath,
@@ -723,7 +724,6 @@ class CouchDBClient
      * as they occur. Filtered changes feed is not supported by this method.
      *
      * @param array $params
-     * @param bool $raw
      * @return resource
      * @throws HTTPException
      */
