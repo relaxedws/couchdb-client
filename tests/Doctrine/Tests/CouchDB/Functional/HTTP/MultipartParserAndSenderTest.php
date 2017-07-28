@@ -67,7 +67,7 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
                 '127.0.0.1',
                 '5984',
                 0,
-                'Received an empty response or not status code'
+                'Received an empty response or not status code.'
             )
 
         );
@@ -99,30 +99,23 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
             ->method('getStreamHeaders')
             ->willReturn(array('status' => 404));
 
-        $string = 'This is the sample body of the response from the source.\n
+        $string = 'Exception: Response status code: 404 when connecting to source site or database. Response body: This is the sample body of the response from the source.\n
+
          It has two lines.';
         $stream = fopen('data://text/plain,' . $string,'r');
         $this->streamClientMock->expects($this->once())
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->transferDocuments(
+        $this->setExpectedException('\Exception', $string);
+
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
             null,
             $this->sourceHeaders
         );
-
-        $this->AssertEquals(
-            new ErrorResponse(
-                '404',
-                array('status' => 404),
-                $string
-            ),
-            $response
-        );
-
     }
 
     /**
