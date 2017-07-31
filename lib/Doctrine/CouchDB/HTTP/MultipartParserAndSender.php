@@ -33,14 +33,12 @@ class MultipartParserAndSender
      */
     protected $targetConnection;
 
-    /**
-     * @param StreamClient $source
-     * @param SocketClient $target
-     */
-    public function __construct(
-        AbstractHTTPClient $source,
-        AbstractHTTPClient $target
-    ) {
+  /**
+   * @param AbstractHTTPClient $source
+   * @param AbstractHTTPClient $target
+   */
+    public function __construct(AbstractHTTPClient $source, AbstractHTTPClient $target)
+    {
         $sourceOptions = $source->getOptions();
         $this->sourceClient = new StreamClient(
             $sourceOptions['host'],
@@ -82,52 +80,25 @@ class MultipartParserAndSender
      * @throws HTTPException
      * @throws \Exception
      */
-    public function request(
-        $sourceMethod,
-        $sourcePath,
-        $targetPath,
-        $sourceData = null,
-        array $sourceHeaders = array()
-    ) {
-        $this->sourceConnection = $this->sourceClient->getConnection(
-            $sourceMethod,
-            $sourcePath,
-            $sourceData,
-            $sourceHeaders
-        );
+    public function transferDocuments($sourceMethod, $sourcePath, $targetPath, $sourceData = null, array $sourceHeaders = array())
+    {
+        $this->sourceConnection = $this->sourceClient->getConnection($sourceMethod, $sourcePath, $sourceData, $sourceHeaders);
         $sourceResponseHeaders = $this->sourceClient->getStreamHeaders();
         $body = '';
-
         if (empty($sourceResponseHeaders['status'])) {
-            try{
-                // Close the connection resource.
-                fclose($this->sourceConnection);
-            } catch (\Exception $e) {
-
-            }
+            @fclose($this->sourceConnection);
             throw HTTPException::readFailure(
                 $this->sourceClient->getOptions()['ip'],
                 $this->sourceClient->getOptions()['port'],
-                'Received an empty response or not status code',
+                'Received an empty response or not status code.',
                 0
             );
-
-
         } elseif ($sourceResponseHeaders['status'] != 200) {
             while (!feof($this->sourceConnection)) {
                 $body .= fgets($this->sourceConnection);
             }
-            try{
-                fclose($this->sourceConnection);
-            } catch (\Exception $e) {
-
-            }
-            return new ErrorResponse(
-                $sourceResponseHeaders['status'],
-                $sourceResponseHeaders,
-                $body
-            );
-
+            @fclose($this->sourceConnection);
+            throw new \Exception('Response status code: ' . $sourceResponseHeaders['status'] . ' when connecting to source site or database. Response body: ' . $body);
         } else {
             try {
                 // Body is an array containing:
@@ -135,18 +106,13 @@ class MultipartParserAndSender
                 //  attachments. These should be posted using the Bulk API.
                 // 2) Responses of posting docs with attachments.
                 $body = $this->parseAndSend($targetPath);
-                try{
-                    fclose($this->sourceConnection);
-                } catch (\Exception $e) {
-
-                }
+                @fclose($this->sourceConnection);
                 return $body;
             } catch(\Exception $e) {
                 throw $e;
             }
         }
     }
-
 
     /**
      * Read and return next line from the connection pointer.
@@ -233,8 +199,6 @@ class MultipartParserAndSender
                     if ($boundary == '') {
                         throw new \Exception('Boundary not set for multipart/related data.');
                     }
-
-
                     $boundary = explode('=', $boundary, 2)[1];
 
                     try {
@@ -246,8 +210,6 @@ class MultipartParserAndSender
                     } catch (\Exception $e) {
                         $responses[] = $e;
                     }
-
-
                 } elseif ($value == 'application/json') {
                     // JSON doc without attachment.
                     $jsonDoc = '';
@@ -282,14 +244,9 @@ class MultipartParserAndSender
      * @throws \Exception
      * @throws \HTTPException
      */
-    protected function sendStream(
-        $method,
-        $path,
-        $streamEnd,
-        $requestHeaders = array()
-    ) {
+    protected function sendStream($method, $path, $streamEnd, $requestHeaders = array())
+    {
         $dataStream = $this->sourceConnection;
-
 
         // Read the json doc. Use _attachments field to find the total
         // Content-Length and create the request header with initial doc data.
@@ -300,12 +257,7 @@ class MultipartParserAndSender
         $attachmentCount = 0;
         $totalAttachmentLength = 0;
         $streamLine = $this->getNextLineFromSourceConnection();
-        while (
-            $jsonFlag == 0 ||
-            ($jsonFlag == 1 &&
-                trim($streamLine) == ''
-            )
-        ) {
+        while ($jsonFlag == 0 || ($jsonFlag == 1 && trim($streamLine) == '')) {
             $str .= $streamLine;
             if (strpos($streamLine, 'Content-Type: application/json') !== false) {
                 $jsonFlag = 1;
@@ -333,7 +285,6 @@ class MultipartParserAndSender
         $requestHeaders['Content-Length'] = strlen($str) + strlen($streamLine)
             + $totalAttachmentLength + $attachmentCount * (2 + $docBoundaryLength) + $docBoundaryLength + 2;
 
-
         if ($this->targetConnection == null) {
             $this->targetConnection = $this->targetClient->getConnection(
                 $method,
@@ -347,12 +298,7 @@ class MultipartParserAndSender
 
         // Write the rest of the data including attachments line by line or in
         // chunks.
-        while(!feof($dataStream) &&
-            ($streamEnd === null ||
-                strpos($streamLine, $streamEnd) ===
-                false
-            )
-        ) {
+        while(!feof($dataStream) && ($streamEnd === null || strpos($streamLine, $streamEnd) === false)) {
             $totalSent = 0;
             $length = strlen($streamLine);
             while($totalSent != $length) {
@@ -374,7 +320,6 @@ class MultipartParserAndSender
         $headers = array(
             'connection' => ($this->targetClient->getOptions()['keep-alive'] ? 'Keep-Alive' : 'Close'),
         );
-
 
         // Remove leading newlines, should not occur at all, actually.
         while ((($line = fgets($this->targetConnection)) !== false) &&
@@ -408,7 +353,6 @@ class MultipartParserAndSender
         }  while ((($line = fgets($this->targetConnection)) !== false) &&
             (($lineContent = rtrim($line)) !== ''));
 
-
         // Read response body
         $body = '';
 
@@ -440,6 +384,5 @@ class MultipartParserAndSender
         }
         return ($body != '' ? json_decode($body, true) : array("status" => $headers['status'])) ;
     }
-
-
+    
 }

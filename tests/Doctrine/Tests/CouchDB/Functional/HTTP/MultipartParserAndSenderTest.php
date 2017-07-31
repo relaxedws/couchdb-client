@@ -67,7 +67,7 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
                 '127.0.0.1',
                 '5984',
                 0,
-                'Received an empty response or not status code'
+                'Received an empty response or not status code.'
             )
 
         );
@@ -83,7 +83,7 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
                 array('port' => '5984')
             ));
 
-        $this->parserAndSender->request(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -99,30 +99,23 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
             ->method('getStreamHeaders')
             ->willReturn(array('status' => 404));
 
-        $string = 'This is the sample body of the response from the source.\n
+        $string = 'Exception: Response status code: 404 when connecting to source site or database. Response body: This is the sample body of the response from the source.\n
+
          It has two lines.';
         $stream = fopen('data://text/plain,' . $string,'r');
         $this->streamClientMock->expects($this->once())
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $this->setExpectedException('\Exception', $string);
+
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
             null,
             $this->sourceHeaders
         );
-
-        $this->AssertEquals(
-            new ErrorResponse(
-                '404',
-                array('status' => 404),
-                $string
-            ),
-            $response
-        );
-
     }
 
     /**
@@ -144,7 +137,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -172,7 +165,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -216,7 +209,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -304,7 +297,7 @@ EOT;
             ->willReturn(array('status' => 200));
 
         // Transfer the missing revisions from the source to the target.
-        list($docStack, $responses) = $this->parserAndSender->request(
+        list($docStack, $responses) = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -366,7 +359,7 @@ EOT;
           ->method('getConnection')
           ->willReturn($stream);
 
-        $response = $this->parserAndSender->request(
+        $response = $this->parserAndSender->transferDocuments(
           $this->sourceMethod,
           $this->sourcePath,
           $this->targetPath,
