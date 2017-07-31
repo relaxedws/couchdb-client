@@ -704,8 +704,8 @@ class CouchDBClient
 
         $targetPath = '/' . $target->getDatabase() . '/' . $docId . '?new_edits=false';
 
-        $mutltipartHandler = new MultipartParserAndSender($this->getHttpClient(), $target->getHttpClient());
-        return $mutltipartHandler->transferDocuments(
+        $multipartHandler = new MultipartParserAndSender($this->getHttpClient(), $target->getHttpClient());
+        return $multipartHandler->transferDocuments(
             'GET',
             $path,
             $targetPath,
