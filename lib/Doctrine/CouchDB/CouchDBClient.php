@@ -562,14 +562,14 @@ class CouchDBClient
         return $response->body;
     }
 
-  /**
-   * Retrieve specific binary attachment data.
-   *
-   * @param string $id
-   * @param string $fileName
-   * @return string
-   * @throws HTTPException
-   */
+    /**
+     * Retrieve specific binary attachment data.
+     *
+     * @param string $id
+     * @param string $fileName
+     * @return string
+     * @throws HTTPException
+     */
     public function getAttachment($id, $fileName) {
         $attachmentPath = '/' . $this->databaseName . '/' . $id . '/' . $fileName;
         $response = $this->httpClient->request('GET', $attachmentPath, null, true);

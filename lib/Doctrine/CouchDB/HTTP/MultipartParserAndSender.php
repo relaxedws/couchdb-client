@@ -71,6 +71,24 @@ class MultipartParserAndSender
      * stream the documents with attachments to the target and return
      * the responses along with docs that did not have any attachments.
      *
+     * @param $sourceMethod
+     * @param $sourcePath
+     * @param $targetPath
+     * @param null $sourceData
+     * @param array $sourceHeaders
+     * @return array|ErrorResponse|string
+     *
+     * @deprecated Use transferDocuments() instead.
+     */
+    public function request($sourceMethod, $sourcePath, $targetPath, $sourceData = null, array $sourceHeaders = array()) {
+        return $this->transferDocuments($sourceMethod, $sourcePath, $targetPath, $sourceData, $sourceHeaders);
+    }
+
+    /**
+     * Perform request to the source, parse the multipart response,
+     * stream the documents with attachments to the target and return
+     * the responses along with docs that did not have any attachments.
+     *
      * @param string $sourceMethod
      * @param string $sourcePath
      * @param string $targetPath
