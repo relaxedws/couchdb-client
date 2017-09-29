@@ -122,6 +122,7 @@ class CouchDBClient
             'path' => null,
             'logging' => false,
             'timeout' => 10,
+            'headers' => array(),
         );
         $options = array_merge($defaults, $options);
 
@@ -139,7 +140,8 @@ class CouchDBClient
             $options['ip'],
             $options['ssl'],
             $options['path'],
-            $options['timeout']
+            $options['timeout'],
+            $options['headers']
         );
         if ($options['logging'] === true) {
             $connection = new HTTP\LoggingClient($connection);
@@ -561,6 +563,25 @@ class CouchDBClient
     }
 
     /**
+     * Retrieve specific binary attachment data.
+     *
+     * @param string $id
+     * @param string $fileName
+     * @return string
+     * @throws HTTPException
+     */
+    public function getAttachment($id, $fileName) {
+        $attachmentPath = '/' . $this->databaseName . '/' . $id . '/' . $fileName;
+        $response = $this->httpClient->request('GET', $attachmentPath, null, true);
+
+        if ($response->status != 200) {
+            throw HTTPException::fromResponse($attachmentPath, $response);
+        }
+
+        return $response->body;
+    }
+
+    /**
      * POST /db/_compact/designDoc
      *
      * @param string $designDoc
@@ -683,8 +704,8 @@ class CouchDBClient
 
         $targetPath = '/' . $target->getDatabase() . '/' . $docId . '?new_edits=false';
 
-        $mutltipartHandler = new MultipartParserAndSender($this->getHttpClient(), $target->getHttpClient());
-        return $mutltipartHandler->request(
+        $multipartHandler = new MultipartParserAndSender($this->getHttpClient(), $target->getHttpClient());
+        return $multipartHandler->transferDocuments(
             'GET',
             $path,
             $targetPath,
@@ -703,7 +724,6 @@ class CouchDBClient
      * as they occur. Filtered changes feed is not supported by this method.
      *
      * @param array $params
-     * @param bool $raw
      * @return resource
      * @throws HTTPException
      */

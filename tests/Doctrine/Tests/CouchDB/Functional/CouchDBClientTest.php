@@ -1,6 +1,7 @@
 <?php
 
 namespace Doctrine\Tests\CouchDB\Functional;
+use Doctrine\CouchDB\Attachment;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
 
@@ -14,6 +15,7 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
     public function setUp()
     {
         $this->couchClient = $this->createCouchDBClient();
+        $this->couchClient->createDatabase($this->getTestDatabase());
     }
 
     public function testGetUuids()
@@ -73,7 +75,6 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
      */
     public function testCreateDuplicateDatabaseThrowsException()
     {
-        $this->couchClient->createDatabase($this->getTestDatabase());
         $this->setExpectedException('Doctrine\CouchDB\HTTP\HTTPException', 'HTTP Error with status 412 occurred while requesting /'.$this->getTestDatabase().'. Error: file_exists The database could not be created, the file already exists.');
         $this->couchClient->createDatabase($this->getTestDatabase());
     }
@@ -176,6 +177,36 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
 
         $response = $client->findDocument($id);
         $this->assertEquals(array("_id" => $id, "_rev" => $rev, "foo" => "bar"), $response->body);
+    }
+
+    public function testGetAttachments()
+    {
+        $client = $this->couchClient;
+
+        $mimeType = 'image/png';
+        $base64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEX/TQBcNTh/AAAAAXRSTlPM0jRW/QAAAApJREFUe' .
+            'JxjYgAAAAYAAzY3fKgAAAAASUVORK5CYII='; // 1px^2 PNG image
+
+        $fileName1 = 'file1.png';
+        $fileName2 = 'file2.png';
+
+        $attachments = array(
+            $fileName1 => array(
+                'content_type' => $mimeType,
+                'data' => $base64Image,
+            ),
+            $fileName2 => array(
+                'content_type' => $mimeType,
+                'data' => $base64Image,
+            ),
+        );
+
+        list($id, $rev) = $client->postDocument(array("foo" => "bar", "_attachments" => $attachments));
+
+        $response = $client->findDocument($id);
+        $this->assertEquals($rev, $response->body['_rev']);
+        $this->assertEquals(count($response->body['_attachments']), count($attachments));
+        $this->assertEquals(base64_encode($this->couchClient->getAttachment($id, $fileName1)), $base64Image);
     }
 
     public function testPutDocument()
@@ -692,5 +723,36 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         $result = $query->execute();
 
         $this->assertEquals(0, $result->getTotalRows());
+    }
+
+    public function testAttachmentWithSpaces()
+    {
+        $filename = 'foo bar.txt';
+        $data     = 'foobar fooobar fooobar';
+        $this->couchClient->putDocument(array(
+            '_attachments' =>
+                array(
+                    $filename =>
+                        array(
+                            'content_type' => 'text/plain',
+                            'data' => base64_encode($data),
+                        ),
+                ),
+        ), 'foobar-1');
+        $doc = $this->couchClient->findDocument('foobar-1')->body;
+
+        $attachment = Attachment::createStub(
+            $doc['_attachments'][$filename]['content_type'],
+            $doc['_attachments'][$filename]['length'],
+            $doc['_attachments'][$filename]['revpos'],
+            $this->couchClient->getHttpClient(),
+            sprintf(
+                '/%s/%s/%s',
+                $this->getTestDatabase(),
+                $doc['_id'],
+                $filename
+            )
+        );
+        $this->assertEquals($data, $attachment->getRawData());
     }
 }
