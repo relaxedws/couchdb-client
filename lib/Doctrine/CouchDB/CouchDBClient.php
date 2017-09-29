@@ -53,7 +53,7 @@ class CouchDBClient
      *
      * @var Client
      */
-    private $httpClient;
+    protected $httpClient;
 
     /**
      * CouchDB Version

@@ -87,7 +87,7 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         $this->assertEquals($this->getTestDatabase(), $data['db_name']);
 
         $notExistedDb = 'not_existed_db';
-        $this->setExpectedException('Doctrine\CouchDB\HTTP\HTTPException','HTTP Error with status 404 occurred while requesting /'.$notExistedDb.'. Error: not_found no_db_file');
+        $this->setExpectedException('Doctrine\CouchDB\HTTP\HTTPException','HTTP Error with status 404 occurred while requesting /'.$notExistedDb.'. Error: not_found Database does not exist.');
         $this->couchClient->getDatabaseInfo($notExistedDb);
     }
 
@@ -102,6 +102,12 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
      */
     public function testGetChanges()
     {
+        if (version_compare($this->couchClient->getVersion(), '2.0.0') >= 0){
+            $this->markTestSkipped(
+              'This test will not pass on version 2.0.0 due a result order bug. https://github.com/apache/couchdb/issues/513'
+            );
+        }
+
         $updater = $this->couchClient->createBulkUpdater();
         $updater->updateDocument(array("_id" => "test1", "foo" => "bar"));
         $updater->updateDocument(array("_id" => "test2", "bar" => "baz"));
@@ -315,9 +321,9 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         // revisions.
         $id = 'multiple_revisions';
         $docs = array(
-            array('_id' => $id, 'foo' => 'bar1', '_rev' => '1-abc'),
-            array('_id' => $id, 'foo' => 'bar2', '_rev' => '1-bcd'),
-            array('_id' => $id, 'foo' => 'bar3', '_rev' => '1-cde')
+            array('_id' => $id, '_rev' => '1-abc' , 'foo' => 'bar1'),
+            array('_id' => $id, '_rev' => '1-bcd' , 'foo' => 'bar2'),
+            array('_id' => $id, '_rev' => '1-cde' , 'foo' => 'bar3')
         );
 
         // Add the documents to the test db using Bulk API.
@@ -334,9 +340,9 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         $this->assertInstanceOf('\Doctrine\CouchDB\HTTP\Response', $response);
         $this->assertObjectHasAttribute('body', $response);
         $expected = array(
-            array('ok' => $docs[2]),
+            array('ok' => $docs[0]),
             array('ok' => $docs[1]),
-            array('ok' => $docs[0])
+            array('ok' => $docs[2])
         );
         $this->assertEquals($expected, $response->body);
         // Test fetching of specific revisions.
@@ -347,9 +353,9 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         $body = $response->body;
         $this->assertEquals(4, count($body));
         // Doc with _rev = 1-cde.
-        $this->assertEquals($docs[2], $body[0]['ok']);
+        $this->assertEquals($docs[0], $body[0]['ok']);
         // Doc with _rev = 1-abc.
-        $this->assertEquals($docs[0], $body[1]['ok']);
+        $this->assertEquals($docs[2], $body[1]['ok']);
         // Missing revisions.
         $this->assertEquals(array('missing' => '100-ghfgf'), $body[2]);
         $this->assertEquals(array('missing' => '200-blah'), $body[3]);
@@ -368,9 +374,10 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         foreach (range(1, 3) as $i) {
             list($id, $rev) = $client->postDocument(array('foo' => 'bar' . $i));
             $ids[] = $id;
-            // This structure might be dependent from couchdb version. Tested against v1.6.1
+            // This structure might be dependent from couchdb version. Tested against 2.0.0
             $expectedRows[] = array(
                 'id' => $id,
+                'key' => $id,
                 'value' => array(
                     'rev' => $rev,
                 ),
@@ -379,24 +386,23 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
                     '_rev' => $rev,
                     'foo' => 'bar' . $i,
                 ),
-                'key' => $id,
             );
         }
 
         $response = $client->findDocuments($ids);
-        $this->assertEquals(array('total_rows' => 3, 'offset' => 0, 'rows' => $expectedRows), $response->body);
+        $this->assertEquals(array('total_rows' => 3, 'rows' => $expectedRows), $response->body);
 
         $response = $client->findDocuments($ids, 0);
-        $this->assertEquals(array('total_rows' => 3, 'offset' => 0, 'rows' => $expectedRows), $response->body);
+        $this->assertEquals(array('total_rows' => 3, 'rows' => $expectedRows), $response->body);
 
         $response = $client->findDocuments($ids, 1);
-        $this->assertEquals(array('total_rows' => 3, 'offset' => 0, 'rows' => array($expectedRows[0])), $response->body);
+        $this->assertEquals(array('total_rows' => 3, 'rows' => array($expectedRows[0])), $response->body);
 
         $response = $client->findDocuments($ids, 0, 2);
-        $this->assertEquals(array('total_rows' => 3, 'offset' => 0, 'rows' => array($expectedRows[2])), $response->body);
+        $this->assertEquals(array('total_rows' => 3, 'rows' => array($expectedRows[2])), $response->body);
 
         $response = $client->findDocuments($ids, 1, 1);
-        $this->assertEquals(array('total_rows' => 3, 'offset' => 0, 'rows' => array($expectedRows[1])), $response->body);
+        $this->assertEquals(array('total_rows' => 3, 'rows' => array($expectedRows[1])), $response->body);
     }
 
     public function testAllDocs()
@@ -412,7 +418,7 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         foreach (range(1, 3) as $i) {
             list($id, $rev) = $client->postDocument(array('foo' => 'bar' . $i));
             $ids[] = $id;
-            // This structure might be dependent from couchdb version. Tested against v1.6.1
+            // This structure might be dependent from couchdb version. Tested against v2.0.0
             $expectedRows[] = array(
                 'id' => $id,
                 'value' => array(
@@ -482,6 +488,7 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
     {
         $client = $this->couchClient;
         $active_tasks = $client->getActiveTasks();
+
         $this->assertEquals(array(), $active_tasks);
 
         $sourceDatabase = $this->getTestDatabase();
@@ -492,16 +499,23 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         $this->couchClient->createDatabase($targetDatabase1);
         $this->couchClient->createDatabase($targetDatabase2);
 
-        $client->replicate($sourceDatabase, $targetDatabase1, null, true);
+        $response = $client->replicate($sourceDatabase, $targetDatabase1, null, true);
+        //Waiting 5 seconds because we may receive an empty array when requesting straight
+        sleep(5);
+
         $active_tasks = $client->getActiveTasks();
         $this->assertTrue(count($active_tasks) == 1);
 
         $client->replicate($sourceDatabase, $targetDatabase2, null, true);
+        sleep(5);
+
         $active_tasks = $client->getActiveTasks();
         $this->assertTrue(count($active_tasks) == 2);
 
         $client->replicate($sourceDatabase, $targetDatabase1, true, true);
         $client->replicate($sourceDatabase, $targetDatabase2, true, true);
+
+        sleep(5);
         $active_tasks = $client->getActiveTasks();
         $this->assertEquals(array(), $active_tasks);
 

@@ -3,6 +3,7 @@
 namespace Doctrine\Tests\CouchDB;
 
 use Doctrine\CouchDB\CouchDBClient;
+use Doctrine\CouchDB\MangoClient;
 use Doctrine\CouchDB\HTTP\SocketClient;
 
 abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
@@ -42,5 +43,14 @@ abstract class CouchDBFunctionalTestCase extends \PHPUnit_Framework_TestCase
     public function createCouchDBClientForBulkTest()
     {
         return new CouchDBClient($this->getHttpClient(), $this->getBulkTestDatabase());
+    }
+
+    public function createMangoClient(){
+        return new MangoClient($this->getHttpClient(), $this->getTestDatabase());
+    }
+
+    public function createMangoClientForBulkTest()
+    {
+        return new MangoClient($this->getHttpClient(), $this->getBulkTestDatabase());
     }
 }
