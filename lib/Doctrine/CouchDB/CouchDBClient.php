@@ -204,7 +204,7 @@ class CouchDBClient
      */
     public function findDocument($id)
     {
-        $documentPath = '/' . $this->databaseName . '/' . urlencode($id);
+        $documentPath = '/' . $this->databaseName . '/' . $id;
         return $this->httpClient->request('GET', $documentPath);
     }
 
@@ -221,7 +221,7 @@ class CouchDBClient
      */
     public function findRevisions($docId, $revisions = null)
     {
-        $path = '/' . $this->databaseName . '/' . urlencode($docId);
+        $path = '/' . $this->databaseName . '/' . $docId;
         if (is_array($revisions)) {
             // Fetch documents of only the specified leaf revisions.
             $path .= '?open_revs=' . json_encode($revisions);
@@ -462,7 +462,7 @@ class CouchDBClient
             $data['_rev'] = $rev;
         }
 
-        $path = '/' . $this->databaseName . '/' . urlencode($id);
+        $path = '/' . $this->databaseName . '/' . $id;
         $response = $this->httpClient->request('PUT', $path, json_encode($data));
 
         if ($response->status != 201) {
@@ -482,7 +482,7 @@ class CouchDBClient
      */
     public function deleteDocument($id, $rev)
     {
-        $path = '/' . $this->databaseName . '/' . urlencode($id) . '?rev=' . $rev;
+        $path = '/' . $this->databaseName . '/' . $id . '?rev=' . $rev;
         $response = $this->httpClient->request('DELETE', $path);
 
         if ($response->status != 200) {
