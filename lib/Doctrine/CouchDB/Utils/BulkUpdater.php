@@ -69,6 +69,11 @@ class BulkUpdater
         $this->data['docs'][] = array('_id' => $id, '_rev' => $rev, '_deleted' => true);
     }
 
+    public function emptyDocuments()
+    {
+        $this->data['docs'] = [];
+    }
+
     public function setNewEdits($newEdits)
     {
         $this->data["new_edits"] = (bool)$newEdits;
