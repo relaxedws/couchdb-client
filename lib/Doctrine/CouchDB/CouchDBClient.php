@@ -62,6 +62,13 @@ class CouchDBClient
      */
     private $version = null;
 
+    /**
+     * CouchDB server UUID.
+     *
+     * @var string
+     */
+    private $uuid = null;
+
     static private $clients = array(
         'socket' => 'Doctrine\CouchDB\HTTP\SocketClient',
         'stream' => 'Doctrine\CouchDB\HTTP\StreamClient',
@@ -311,6 +318,25 @@ class CouchDBClient
             $this->version = $response->body['version'];
         }
         return $this->version;
+    }
+
+    /**
+     * Get the uuid of the CouchDB server.
+     *
+     * @throws HTTPException
+     * @return string
+     */
+    public function getUuid()
+    {
+        if ($this->uuid === null) {
+            $response = $this->httpClient->request('GET', '/');
+            if ($response->status != 200) {
+                throw HTTPException::fromResponse('/', $response);
+            }
+
+            $this->uuid = $response->body['uuid'];
+        }
+        return $this->uuid;
     }
 
     /**
