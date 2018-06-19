@@ -310,7 +310,7 @@ class CouchDBClient
     public function getVersion()
     {
         if ($this->version === null) {
-            $response = $this->httpClient->request('GET', '/');
+            $response = $this->httpClient->request('GET', '');
             if ($response->status != 200) {
                 throw HTTPException::fromResponse('/', $response);
             }
@@ -329,7 +329,7 @@ class CouchDBClient
     public function getUuid()
     {
         if ($this->uuid === null) {
-            $response = $this->httpClient->request('GET', '/');
+            $response = $this->httpClient->request('GET', '');
             if ($response->status != 200) {
                 throw HTTPException::fromResponse('/', $response);
             }
@@ -364,7 +364,7 @@ class CouchDBClient
      */
     public function createDatabase($name)
     {
-        $response = $this->httpClient->request('PUT', '/' . urlencode($name));
+        $response = $this->httpClient->request('PUT', '' . urlencode($name));
 
         if ($response->status != 201) {
             throw HTTPException::fromResponse('/' . urlencode($name), $response);
@@ -380,7 +380,7 @@ class CouchDBClient
      */
     public function deleteDatabase($name)
     {
-        $response = $this->httpClient->request('DELETE', '/' . urlencode($name));
+        $response = $this->httpClient->request('DELETE', '' . urlencode($name));
 
         if ($response->status != 200 && $response->status != 404) {
             throw HTTPException::fromResponse('/' . urlencode($name), $response);
@@ -396,7 +396,7 @@ class CouchDBClient
      */
     public function getDatabaseInfo($name = null)
     {
-        $response = $this->httpClient->request('GET', '/' . ($name ? urlencode($name) : $this->databaseName));
+        $response = $this->httpClient->request('GET', '' . ($name ? urlencode($name) : $this->databaseName));
 
         if ($response->status != 200) {
             throw HTTPException::fromResponse('/' . urlencode($name), $response);
