@@ -1,12 +1,8 @@
 # Doctrine CouchDB v2.x Client
 
-[![Build Status](https://travis-ci.org/doctrine/couchdb-client.png?branch=master)](https://travis-ci.org/doctrine/couchdb-client)
-[![StyleCI](https://styleci.io/repos/90809440/shield?style=flat)](https://styleci.io/repos/90809440)
-
+[![Build Status](https://travis-ci.org/relaxedws/couchdb-client.svg?branch=master)](https://travis-ci.org/relaxedws/couchdb-client)
 
 Simple API that wraps around CouchDBs v2.x HTTP API.
-
-For CouchDB 1.x, please check our [release/1.0.0](https://github.com/doctrine/couchdb-client/tree/release/1.0.0) branch.
 
 ## Features
 
