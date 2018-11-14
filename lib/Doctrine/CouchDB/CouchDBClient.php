@@ -332,7 +332,14 @@ class CouchDBClient
                 throw HTTPException::fromResponse('/', $response);
             }
 
-            $this->uuid = $response->body['uuid'];
+            if (empty($response->body['uuid'])) {
+              // Do this because in some CouchDB versions the UUID value is not
+              // in the response. That bug should be fixed in CouchDB 2.3.0.
+              $this->uuid = md5(json_encode($response->body));
+            }
+            else {
+              $this->uuid = $response->body['uuid'];
+            }
         }
         return $this->uuid;
     }
