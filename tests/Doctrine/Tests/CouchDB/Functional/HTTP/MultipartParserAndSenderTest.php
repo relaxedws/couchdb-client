@@ -3,6 +3,7 @@
 namespace Doctrine\Tests\CouchDB\Functional\HTTP;
 
 use Doctrine\CouchDB\CouchDBClient;
+use Doctrine\CouchDB\HTTP\ErrorResponse;
 use Doctrine\CouchDB\HTTP\MultipartParserAndSender;
 use Doctrine\CouchDB\HTTP\StreamClient;
 
@@ -103,14 +104,21 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
             ->method('getConnection')
             ->willReturn($stream);
 
-        $this->setExpectedException('\Exception', $string);
-
-        $this->parserAndSender->transferDocuments(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
             null,
             $this->sourceHeaders
+        );
+
+        $this->AssertEquals(
+            new ErrorResponse(
+                '404',
+                ['status' => 404],
+                $string
+            ),
+            $response
         );
     }
 
