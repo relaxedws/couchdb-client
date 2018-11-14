@@ -1,34 +1,19 @@
 <?php
-/*
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This software consists of voluntary contributions made by many individuals
- * and is licensed under the MIT license. For more information, see
- * <http://www.doctrine-project.org>.
- */
 
 namespace Doctrine\CouchDB\Tools\Console\Helper;
 
-use Symfony\Component\Console\Helper\Helper;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\ODM\CouchDB\DocumentManager;
+use Symfony\Component\Console\Helper\Helper;
 
 /**
  * Doctrine CLI Connection Helper.
  *
  * @license http://www.opensource.org/licenses/mit-license.php MIT
+ *
  * @link    www.doctrine-project.org
  * @since   2.0
+ *
  * @author  Benjamin Eberlei <kontakt@beberlei.de>
  */
 class CouchDBHelper extends Helper
@@ -41,9 +26,9 @@ class CouchDBHelper extends Helper
     protected $dm;
 
     /**
-     * Constructor
-     * 
-     * @param CouchDBClient $couchDBClient
+     * Constructor.
+     *
+     * @param CouchDBClient   $couchDBClient
      * @param DocumentManager $dm
      */
     public function __construct(CouchDBClient $couchDBClient = null, DocumentManager $dm = null)
@@ -57,7 +42,7 @@ class CouchDBHelper extends Helper
     }
 
     /**
-     * Retrieves Doctrine ODM CouchDB Manager
+     * Retrieves Doctrine ODM CouchDB Manager.
      *
      * @return \Doctrine\ODM\CouchDB\DocumentManager
      */
