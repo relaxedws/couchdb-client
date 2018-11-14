@@ -1,6 +1,7 @@
 <?php
 
 namespace Doctrine\Tests\CouchDB\Functional;
+
 use Doctrine\CouchDB\Attachment;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
@@ -313,15 +314,13 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
 
     public function testCompactView()
     {
-        $client = $this->couchClient;
-
         $designDocPath = __DIR__.'/../../Models/CMS/_files';
 
         $client = $this->couchClient;
         $designDoc = new FolderDesignDocument($designDocPath);
 
         $query = $client->createViewQuery('test-design-doc-query', 'username', $designDoc);
-        $result = $query->execute();
+        $query->execute();
 
         $client->compactView('test-design-doc-query');
     }
@@ -363,7 +362,7 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
         // Set newedits to false to use the supplied _rev instead of assigning
         // new ones.
         $updater->setNewEdits(false);
-        $response = $updater->execute();
+        $updater->execute();
 
         // Test fetching of documents of all revisions. By default all
         // revisions are fetched.
@@ -638,10 +637,8 @@ class CouchDBClientTest extends \Doctrine\Tests\CouchDB\CouchDBFunctionalTestCas
 
         // Missing revisions in the $copyDb.
         $missingRevs = ['1-abc', '1-bcd'];
+
         // Transfer the missing revisions from the source to the target.
-
-        $response = $client->transferChangedDocuments($id, $missingRevs, $copyClient, true);
-
         list($docStack, $responses) = $client->transferChangedDocuments($id, $missingRevs, $copyClient);
         // $docStack should contain the doc that didn't have the attachment.
         $this->assertEquals(1, count($docStack));

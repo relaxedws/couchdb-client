@@ -3,7 +3,6 @@
 namespace Doctrine\Tests\CouchDB\Functional\HTTP;
 
 use Doctrine\CouchDB\CouchDBClient;
-use Doctrine\CouchDB\HTTP\ErrorResponse;
 use Doctrine\CouchDB\HTTP\MultipartParserAndSender;
 use Doctrine\CouchDB\HTTP\StreamClient;
 
@@ -106,21 +105,12 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
 
         $this->setExpectedException('\Exception', $string);
 
-        $response = $this->parserAndSender->transferDocuments(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
             null,
             $this->sourceHeaders
-        );
-
-        $this->AssertEquals(
-            new ErrorResponse(
-                '404',
-                ['status' => 404],
-                $string
-            ),
-            $response
         );
     }
 
@@ -143,7 +133,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->transferDocuments(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -171,7 +161,7 @@ EOT;
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->transferDocuments(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -269,7 +259,7 @@ EOT;
         // Set newedits to false to use the supplied _rev instead of assigning
         // new ones.
         $updater->setNewEdits(false);
-        $response = $updater->execute();
+        $updater->execute();
 
         // Create the copy database and a copyClient to interact with it.
         $copyDb = $this->getTestDatabase().'_multipart_copy';
