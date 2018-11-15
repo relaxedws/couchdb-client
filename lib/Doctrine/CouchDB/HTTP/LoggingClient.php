@@ -1,21 +1,4 @@
 <?php
-/*
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This software consists of voluntary contributions made by many individuals
- * and is licensed under the MIT license. For more information, see
- * <http://www.doctrine-project.org>.
- */
 
 namespace Doctrine\CouchDB\HTTP;
 
@@ -41,7 +24,7 @@ class LoggingClient implements Client
      *
      * @var array
      */
-    public $requests = array();
+    public $requests = [];
 
     /**
      * @var float
@@ -50,7 +33,7 @@ class LoggingClient implements Client
 
     /**
      * Construct new logging client wrapping the real client.
-     * 
+     *
      * @param Client $client
      */
     public function __construct(Client $client)
@@ -58,23 +41,23 @@ class LoggingClient implements Client
         $this->client = $client;
     }
 
-    public function request($method, $path, $data = null, $raw = false, array $headers = array())
+    public function request($method, $path, $data = null, $raw = false, array $headers = [])
     {
         $start = microtime(true);
-        
+
         $response = $this->client->request($method, $path, $data, $raw, $headers);
-        
+
         $duration = microtime(true) - $start;
-        $this->requests[] = array(
-            'duration' => $duration,
-            'method' => $method,
-            'path' => rawurldecode($path),
-            'request' => $data,
-            'request_size' => strlen($data),
-            'response_status' => $response->status,
-            'response' => $response->body,
+        $this->requests[] = [
+            'duration'         => $duration,
+            'method'           => $method,
+            'path'             => rawurldecode($path),
+            'request'          => $data,
+            'request_size'     => strlen($data),
+            'response_status'  => $response->status,
+            'response'         => $response->body,
             'response_headers' => $response->headers,
-        );
+        ];
         $this->totalDuration += $duration;
 
         return $response;
@@ -84,7 +67,7 @@ class LoggingClient implements Client
         $method,
         $path,
         $data = null,
-        array $headers = array()
+        array $headers = []
     ) {
         $start = microtime(true);
 
@@ -96,16 +79,16 @@ class LoggingClient implements Client
         );
 
         $duration = microtime(true) - $start;
-        $this->requests[] = array(
-            'duration' => $duration,
-            'method' => $method,
-            'path' => rawurldecode($path),
-            'request' => $data,
-            'request_size' => strlen($data),
-            'response_status' => $response->status,
-            'response' => $response->body,
+        $this->requests[] = [
+            'duration'         => $duration,
+            'method'           => $method,
+            'path'             => rawurldecode($path),
+            'request'          => $data,
+            'request_size'     => strlen($data),
+            'response_status'  => $response->status,
+            'response'         => $response->body,
             'response_headers' => $response->headers,
-        );
+        ];
         $this->totalDuration += $duration;
 
         return $response;

@@ -2,7 +2,6 @@
 
 namespace Doctrine\Tests\CouchDB\Functional\HTTP;
 
-
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\HTTP\ErrorResponse;
 use Doctrine\CouchDB\HTTP\MultipartParserAndSender;
@@ -41,21 +40,19 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
         $reflector->setValue($this->parserAndSender, $this->streamClientMock);
 
         // Params for the request.
-        $this->sourceParams = array('revs' => true, 'latest' => true);
+        $this->sourceParams = ['revs' => true, 'latest' => true];
         $this->sourceMethod = 'GET';
         $this->docId = 'multipartTestDoc';
-        $this->sourcePath = '/' . $this->getTestDatabase() . '/' . $this->docId;
-        $this->targetPath = '/' .$this->getTestDatabase() . '_multipart_copy'
-            . '/' . $this->docId . '?new_edits=false';
-        $this->sourceHeaders = array('Accept' => 'multipart/mixed');
-
-
+        $this->sourcePath = '/'.$this->getTestDatabase().'/'.$this->docId;
+        $this->targetPath = '/'.$this->getTestDatabase().'_multipart_copy'
+            .'/'.$this->docId.'?new_edits=false';
+        $this->sourceHeaders = ['Accept' => 'multipart/mixed'];
     }
 
     public function tearDown()
     {
         parent::tearDown();
-        $this->createCouchDBClient()->deleteDatabase($this->getTestDatabase() . '_multipart_copy');
+        $this->createCouchDBClient()->deleteDatabase($this->getTestDatabase().'_multipart_copy');
     }
 
     public function testRequestThrowsHTTPExceptionOnEmptyStatus()
@@ -74,13 +71,13 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
         // Return header without status code.
         $this->streamClientMock->expects($this->once())
             ->method('getStreamHeaders')
-            ->willReturn(array());
+            ->willReturn([]);
 
         $this->streamClientMock->expects($this->exactly(2))
             ->method('getOptions')
             ->will($this->onConsecutiveCalls(
-                array('ip' => '127.0.0.1'),
-                array('port' => '5984')
+                ['ip' => '127.0.0.1'],
+                ['port' => '5984']
             ));
 
         $this->parserAndSender->transferDocuments(
@@ -97,24 +94,31 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
         // Return header without status code > 400.
         $this->streamClientMock->expects($this->once())
             ->method('getStreamHeaders')
-            ->willReturn(array('status' => 404));
+            ->willReturn(['status' => 404]);
 
         $string = 'Exception: Response status code: 404 when connecting to source site or database. Response body: This is the sample body of the response from the source.\n
 
          It has two lines.';
-        $stream = fopen('data://text/plain,' . $string,'r');
+        $stream = fopen('data://text/plain,'.$string, 'r');
         $this->streamClientMock->expects($this->once())
             ->method('getConnection')
             ->willReturn($stream);
 
-        $this->setExpectedException('\Exception', $string);
-
-        $this->parserAndSender->transferDocuments(
+        $response = $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
             null,
             $this->sourceHeaders
+        );
+
+        $this->AssertEquals(
+            new ErrorResponse(
+                '404',
+                ['status' => 404],
+                $string
+            ),
+            $response
         );
     }
 
@@ -127,17 +131,17 @@ class MultipartParserAndSenderTest extends \Doctrine\Tests\CouchDB\CouchDBFuncti
         // Return header with status code as 200.
         $this->streamClientMock->expects($this->once())
             ->method('getStreamHeaders')
-            ->willReturn(array('status' => 200));
-        $string = <<<EOT
+            ->willReturn(['status' => 200]);
+        $string = <<<'EOT'
 --7b1596fc4940bc1be725ad67f11ec1c4
 Content-Type: HTML
 EOT;
-        $stream = fopen('data://text/plain,' . $string,'r');
+        $stream = fopen('data://text/plain,'.$string, 'r');
         $this->streamClientMock->expects($this->once())
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->transferDocuments(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -155,17 +159,17 @@ EOT;
         // Return header with status code as 200.
         $this->streamClientMock->expects($this->once())
             ->method('getStreamHeaders')
-            ->willReturn(array('status' => 200));
-        $string = <<<EOT
+            ->willReturn(['status' => 200]);
+        $string = <<<'EOT'
 --7b1596fc4940bc1be725ad67f11ec1c4
 Content-Type: application/json; unknownBlahBlah="true"
 EOT;
-        $stream = fopen('data://text/plain,' . $string,'r');
+        $stream = fopen('data://text/plain,'.$string, 'r');
         $this->streamClientMock->expects($this->once())
             ->method('getConnection')
             ->willReturn($stream);
 
-        $response = $this->parserAndSender->transferDocuments(
+        $this->parserAndSender->transferDocuments(
             $this->sourceMethod,
             $this->sourcePath,
             $this->targetPath,
@@ -179,12 +183,12 @@ EOT;
         // Return header with status code as 200.
         $this->streamClientMock->expects($this->once())
             ->method('getStreamHeaders')
-            ->willReturn(array('status' => 200));
-        $docs = array(
-            '{"_id": "' .$this->docId. '","_rev": "1-abc","foo":"bar"}',
-            '{"_id": "' .$this->docId. '","_rev": "1-abcd","foo":"baz"}',
-            '{"_id": "' .$this->docId. '","_rev": "1-abcde","foo":"baz"}',
-        );
+            ->willReturn(['status' => 200]);
+        $docs = [
+            '{"_id": "'.$this->docId.'","_rev": "1-abc","foo":"bar"}',
+            '{"_id": "'.$this->docId.'","_rev": "1-abcd","foo":"baz"}',
+            '{"_id": "'.$this->docId.'","_rev": "1-abcde","foo":"baz"}',
+        ];
         $string = <<<EOT
 --7b1596fc4940bc1be725ad67f11ec1c4
 Content-Type: application/json
@@ -204,7 +208,7 @@ Content-Type: application/json
 $docs[2]
 --7b1596fc4940bc1be725ad67f11ec1c4
 EOT;
-        $stream = fopen('data://text/plain,' . $string,'r');
+        $stream = fopen('data://text/plain,'.$string, 'r');
         $this->streamClientMock->expects($this->once())
             ->method('getConnection')
             ->willReturn($stream);
@@ -238,26 +242,23 @@ EOT;
         // Doc id.
         $id = $this->docId;
         // Document with attachments.
-        $docWithAttachment = array (
-            '_id' => $id,
-            '_rev' => '1-abc',
-            '_attachments' =>
-                array (
-                    'foo.txt' =>
-                        array (
+        $docWithAttachment = [
+            '_id'          => $id,
+            '_rev'         => '1-abc',
+            '_attachments' => [
+                    'foo.txt' => [
                             'content_type' => 'text/plain',
-                            'data' => 'VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIHRleHQ=',
-                        ),
-                    'bar.txt' =>
-                        array (
+                            'data'         => 'VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIHRleHQ=',
+                        ],
+                    'bar.txt' => [
                             'content_type' => 'text/plain',
-                            'data' => 'VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIHRleHQ=',
-                        ),
-                ),
-        );
+                            'data'         => 'VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIHRleHQ=',
+                        ],
+                ],
+        ];
         // Doc without any attachment. The id of both the docs is same.
         // So we will get two leaf revisions.
-        $doc = array('_id' => $id, 'foo' => 'bar', '_rev' => '1-bcd');
+        $doc = ['_id' => $id, 'foo' => 'bar', '_rev' => '1-bcd'];
 
         // Add the documents to the test db using Bulk API.
         $updater = $client->createBulkUpdater();
@@ -266,18 +267,18 @@ EOT;
         // Set newedits to false to use the supplied _rev instead of assigning
         // new ones.
         $updater->setNewEdits(false);
-        $response = $updater->execute();
+        $updater->execute();
 
         // Create the copy database and a copyClient to interact with it.
-        $copyDb = $this->getTestDatabase() . '_multipart_copy';
+        $copyDb = $this->getTestDatabase().'_multipart_copy';
         $client->createDatabase($copyDb);
         $copyClient = new CouchDBClient($client->getHttpClient(), $copyDb);
 
         // Missing revisions in the $copyDb.
-        $missingRevs = array('1-abc', '1-bcd');
+        $missingRevs = ['1-abc', '1-bcd'];
         $this->sourceParams['open_revs'] = json_encode($missingRevs);
         $query = http_build_query($this->sourceParams);
-        $this->sourcePath .= '?' . $query;
+        $this->sourcePath .= '?'.$query;
 
         // Get the multipart data stream from real CouchDB instance.
         $stream = (new StreamClient())->getConnection(
@@ -294,7 +295,7 @@ EOT;
         // Return header with status code as 200.
         $this->streamClientMock->expects($this->once())
             ->method('getStreamHeaders')
-            ->willReturn(array('status' => 200));
+            ->willReturn(['status' => 200]);
 
         // Transfer the missing revisions from the source to the target.
         list($docStack, $responses) = $this->parserAndSender->transferDocuments(
@@ -326,12 +327,12 @@ EOT;
     {
         $this->streamClientMock->expects($this->once())
           ->method('getStreamHeaders')
-          ->willReturn(array('status' => 200));
-        $docs = array(
-          '{"_id": "' . $this->docId . '","_rev": "1-abc","foo":"bar"}',
-          '{"_id": "' . $this->docId . '","_rev": "1-abcd","foo":"baz"}',
-          '{"_id": "' . $this->docId . '","_rev": "1-abcde","foo":"baz"}',
-        );
+          ->willReturn(['status' => 200]);
+        $docs = [
+          '{"_id": "'.$this->docId.'","_rev": "1-abc","foo":"bar"}',
+          '{"_id": "'.$this->docId.'","_rev": "1-abcd","foo":"baz"}',
+          '{"_id": "'.$this->docId.'","_rev": "1-abcde","foo":"baz"}',
+        ];
         $string = <<<EOT
 --7b1596fc4940bc1be725ad67f11ec1c4
 Content-Type: application/json
@@ -354,7 +355,7 @@ $size
 $string
 EOT;
 
-        $stream = fopen('data://text/plain,' . $string,'r');
+        $stream = fopen('data://text/plain,'.$string, 'r');
         $this->streamClientMock->expects($this->once())
           ->method('getConnection')
           ->willReturn($stream);
@@ -373,5 +374,4 @@ EOT;
         $this->AssertEquals($docs[1], $response[0][1]);
         $this->AssertEquals($docs[2], $response[0][2]);
     }
-
 }
