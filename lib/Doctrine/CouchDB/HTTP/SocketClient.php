@@ -98,7 +98,7 @@ class SocketClient extends AbstractHTTPClient
                 ];
             }
         } else {
-            $host = 'tcp://'.$this->options['ip'].':'.$this->options['port'];
+            $host = $this->options['ip'].':'.$this->options['port'];
         }
 
         // Try to establish the connection.
