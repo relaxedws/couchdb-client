@@ -113,6 +113,7 @@ class CouchDBClient
             'password' => null,
             'ip'       => null,
             'ssl'      => false,
+            'verify'   => true,
             'path'     => null,
             'logging'  => false,
             'timeout'  => 10,

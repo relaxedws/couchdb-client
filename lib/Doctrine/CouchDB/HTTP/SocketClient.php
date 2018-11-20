@@ -75,6 +75,7 @@ class SocketClient extends AbstractHTTPClient
     protected function checkConnection()
     {
         // Setting Connection scheme according ssl support
+        $context_options = null;
         if ($this->options['ssl']) {
             if (!extension_loaded('openssl')) {
                 // no openssl extension loaded.
@@ -88,24 +89,30 @@ class SocketClient extends AbstractHTTPClient
                     0
                 );
             }
-
-            $host = 'ssl://'.$this->options['host'];
+            $host = 'ssl://'.$this->options['host'].':'.$this->options['port'];
+            if ($this->options['verify'] === false) {
+                $context_options = [
+                    'ssl' => [
+                        'verify_peer' => FALSE,
+                    ],
+                ];
+            }
         } else {
-            $host = $this->options['ip'];
+            $host = $this->options['ip'].':'.$this->options['port'];
         }
 
-        // If the connection could not be established, fsockopen sadly does not
-        // only return false (as documented), but also always issues a warning.
-        if (($this->connection === null) &&
-             (($this->connection = @fsockopen($host, $this->options['port'], $errno, $errstr, $this->options['timeout'])) === false)) {
-            // This is a bit hackisch...
-            $this->connection = null;
-            throw HTTPException::connectionFailure(
-                $this->options['ip'],
-                $this->options['port'],
-                $errstr,
-                $errno
-            );
+        // Try to establish the connection.
+        if ($this->connection === null) {
+            $context = stream_context_create($context_options);
+            if (($this->connection = @stream_socket_client($host, $errno, $errstr, $this->options['timeout'], STREAM_CLIENT_CONNECT, $context)) === false) {
+                $this->connection = null;
+                throw HTTPException::connectionFailure(
+                    $this->options['ip'],
+                    $this->options['port'],
+                    $errstr,
+                    $errno
+                );
+            }
         }
     }
 

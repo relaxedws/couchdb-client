@@ -27,6 +27,7 @@ abstract class AbstractHTTPClient implements Client
         'port'       => 5984,
         'ip'         => '127.0.0.1',
         'ssl'        => false,
+        'verify'     => true,
         'timeout'    => 10,
         'keep-alive' => true,
         'username'   => null,
@@ -47,17 +48,17 @@ abstract class AbstractHTTPClient implements Client
      * @param string $password
      * @param string $ip
      * @param bool   $ssl
+     * @param bool   $verify
      * @param string $path
      * @param int    $timeout
      * @param array  $headers
-     *
-     * @return \Doctrine\CouchDB\HTTP\AbstractHTTPClient
      */
-    public function __construct($host = 'localhost', $port = 5984, $username = null, $password = null, $ip = null, $ssl = false, $path = null, $timeout = 10, array $headers = [])
+    public function __construct($host = 'localhost', $port = 5984, $username = null, $password = null, $ip = null, $ssl = false, $verify = true, $path = null, $timeout = 10, array $headers = [])
     {
         $this->options['host'] = (string) $host;
         $this->options['port'] = (int) $port;
         $this->options['ssl'] = $ssl;
+        $this->options['verify'] = $verify;
         $this->options['username'] = $username;
         $this->options['password'] = $password;
         $this->options['path'] = $path;
@@ -89,6 +90,7 @@ abstract class AbstractHTTPClient implements Client
         switch ($option) {
         case 'keep-alive':
         case 'ssl':
+        case 'verify':
             $this->options[$option] = (bool) $value;
             break;
 
