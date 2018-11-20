@@ -44,6 +44,7 @@ class MultipartParserAndSender
             $sourceOptions['password'],
             $sourceOptions['ip'],
             $sourceOptions['ssl'],
+            $sourceOptions['verify'],
             $sourceOptions['path'],
             $sourceOptions['timeout'],
             $sourceOptions['headers']
@@ -57,6 +58,7 @@ class MultipartParserAndSender
             $targetOptions['password'],
             $targetOptions['ip'],
             $targetOptions['ssl'],
+            $targetOptions['verify'],
             $targetOptions['path'],
             $targetOptions['timeout'],
             $sourceOptions['headers']
