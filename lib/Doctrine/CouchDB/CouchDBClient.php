@@ -134,6 +134,7 @@ class CouchDBClient
             $options['password'],
             $options['ip'],
             $options['ssl'],
+            $options['verify'],
             $options['path'],
             $options['timeout'],
             $options['headers']
