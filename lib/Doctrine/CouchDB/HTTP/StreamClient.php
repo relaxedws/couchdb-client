@@ -89,24 +89,26 @@ class StreamClient extends AbstractHTTPClient
             }
             // Determine the correct scheme so SSL is handled too.
             $scheme = !empty($this->options['ssl']) ? 'https' : 'http';
-
+            $context_options = [
+                'http' => [
+                    'method'        => $method,
+                    'content'       => $data,
+                    'ignore_errors' => true,
+                    'max_redirects' => 0,
+                    'user_agent'    => 'Doctrine CouchDB ODM $Revision$',
+                    'timeout'       => $this->options['timeout'],
+                    'header'        => $stringHeader,
+                ],
+            ];
+            if ($scheme === 'https' && ($this->options['verify'] === false)) {
+              $context_options['ssl'] = ['verify_peer' => false];
+            }
+            $context = stream_context_create($context_options);
             $this->httpFilePointer = @fopen(
                 $scheme . '://' . $basicAuth . $host . $path,
                 'r',
                 false,
-                stream_context_create(
-                    [
-                        'http' => [
-                            'method'        => $method,
-                            'content'       => $data,
-                            'ignore_errors' => true,
-                            'max_redirects' => 0,
-                            'user_agent'    => 'Doctrine CouchDB ODM $Revision$',
-                            'timeout'       => $this->options['timeout'],
-                            'header'        => $stringHeader,
-                        ],
-                    ]
-                )
+                $context
             );
         }
 

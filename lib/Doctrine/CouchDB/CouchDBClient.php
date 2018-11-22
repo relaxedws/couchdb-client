@@ -113,6 +113,7 @@ class CouchDBClient
             'password' => null,
             'ip'       => null,
             'ssl'      => false,
+            'verify'   => true,
             'path'     => null,
             'logging'  => false,
             'timeout'  => 10,
@@ -133,6 +134,7 @@ class CouchDBClient
             $options['password'],
             $options['ip'],
             $options['ssl'],
+            $options['verify'],
             $options['path'],
             $options['timeout'],
             $options['headers']
