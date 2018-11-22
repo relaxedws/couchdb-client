@@ -93,7 +93,7 @@ class SocketClient extends AbstractHTTPClient
             if ($this->options['verify'] === false) {
                 $context_options = [
                     'ssl' => [
-                        'verify_peer' => FALSE,
+                        'verify_peer' => false,
                     ],
                 ];
             }
