@@ -66,12 +66,11 @@ class StreamClient extends AbstractHTTPClient
      */
     protected function checkConnection($method, $path, $data, $headers)
     {
-        $basicAuth = '';
-        if ($this->options['username']) {
-            $basicAuth .= "{$this->options['username']}:{$this->options['password']}@";
-        }
         if ($this->options['headers']) {
             $headers = array_merge($this->options['headers'], $headers);
+        }
+        if ($this->options['username']) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->options['username'].':'.$this->options['password']);
         }
         if (!isset($headers['Content-Type'])) {
             $headers['Content-Type'] = 'application/json';
@@ -105,21 +104,10 @@ class StreamClient extends AbstractHTTPClient
             }
             $context = stream_context_create($context_options);
             $this->httpFilePointer = @fopen(
-                $scheme . '://' . $basicAuth . $host . $path,
+                $scheme . '://' . $host . $path,
                 'r',
                 false,
                 $context
-            );
-        }
-
-        // Check if connection has been established successfully.
-        if ($this->httpFilePointer === false) {
-            $error = error_get_last();
-            throw HTTPException::connectionFailure(
-                $this->options['ip'],
-                $this->options['port'],
-                $error['message'],
-                0
             );
         }
     }
