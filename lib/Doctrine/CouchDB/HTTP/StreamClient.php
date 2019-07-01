@@ -110,6 +110,17 @@ class StreamClient extends AbstractHTTPClient
                 $context
             );
         }
+
+        // Check if connection has been established successfully.
+        if ($this->httpFilePointer === false) {
+            $error = error_get_last();
+            throw HTTPException::connectionFailure(
+                $this->options['ip'],
+                $this->options['port'],
+                $error['message'],
+                0
+            );
+        }
     }
 
     /**
