@@ -100,7 +100,12 @@ class StreamClient extends AbstractHTTPClient
                 ],
             ];
             if ($scheme === 'https' && ($this->options['verify'] === false)) {
-              $context_options['ssl'] = ['verify_peer' => false];
+                $context_options['ssl'] = [
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ],
+              ];
             }
             $context = stream_context_create($context_options);
             $this->httpFilePointer = @fopen(
