@@ -577,6 +577,21 @@ class CouchDBClient
     }
 
     /**
+     * https://docs.couchdb.org/en/stable/api/database/security.html
+     */
+    public function putSecurityDocument(SecurityDocument $securityDoc)
+    {
+        $data = $securityDoc->getData();
+
+        $path = '/' . $this->databaseName . '/_security';
+        $response = $this->httpClient->request('PUT', $path, json_encode($data));
+
+        if ($response->status != 200 || !$response->body['ok']) {
+            throw HTTPException::fromResponse($path, $response);
+        }
+    }
+
+    /**
      * GET /db/_compact.
      *
      * Return array of data about compaction status.
